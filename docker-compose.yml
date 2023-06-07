@@ -1,0 +1,47 @@
+version: "3.7"
+
+services:
+  proxy:
+    image: traefik
+    command: --providers.docker --api.insecure
+    ports:
+      - 8090:80
+      - 8080:8080
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  app:
+    image: node:10-alpine
+    command: sh -c "yarn install && yarn run dev"
+    working_dir: /app
+    volumes:
+      - ./api:/app
+    labels:
+      traefik.http.routers.api.rule: Host(`localhost`) && PathPrefix(`/api`)
+      traefik.http.services.api.loadbalancer.server.port: 3000
+
+  client:
+    image: node:lts-alpine
+    command: sh -c "yarn install && yarn run dev"
+    working_dir: /app
+    volumes:
+      - ./client:/app
+    ports:
+      - 3000:3000 # because CRA's WS isn't working through the proxy correctly
+    labels:
+      traefik.http.routers.client.rule: Host(`localhost`)
+      traefik.http.services.client.loadbalancer.server.port: 3000
+
+  neo4j:
+    build:
+      context: ./neo4j
+    labels:
+      traefik.http.routers.neo4j.rule: Host(`neo4j.localhost`)
+      traefik.http.services.neo4j.loadbalancer.server.port: 7474
+    volumes:
+      - neo4j-data:/data
+    environment:
+      NEO4J_dbms_security_procedures_unrestricted: apoc.\*
+
+volumes:
+  neo4j-data:

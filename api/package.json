@@ -1,0 +1,17 @@
+{
+  "name": "peg-board",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.17.2",
+    "neo4j-driver": "^4.4.1",
+    "wait-on": "^6.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "2.0.15"
+  },
+  "scripts": {
+    "dev": "nodemon src/index.js"
+  }
+}
